@@ -1,19 +1,16 @@
 import {
-  addDoc,
   arrayUnion,
   collection,
   doc,
   getDoc,
-  Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { db } from "../firebase-config";
 
 const Chat = () => {
   const [msg, setMsg] = useState("");
   const [messages, setMessages] = useState([]);
-  const [self, setSelf] = useState(false);
 
   const roomId = JSON.parse(localStorage.getItem("roomId"));
   const loggedUser = JSON.parse(localStorage.getItem("user"));
@@ -31,10 +28,12 @@ const Chat = () => {
       }
     };
     getData();
-  }, [msg]);
+  }, [messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
+
+    if(msg === '') return alert("Can't send empty message..")
 
     const roomRef = doc(db, "room", roomId);
     const msgRef = collection(roomRef, "messages");
@@ -78,15 +77,34 @@ const Chat = () => {
   return (
     <>
       {/* <h1 className='text-center'>Chat component with all chats</h1> */}
-      <div className="flex flex-col max-w-screen-md bg-violet-600 h-screen mx-auto rounded-lg">
-        <div className="flex flex-col mt-3">
+      <div className="flex flex-col w-full bg-violet-600 h-screen mx-auto">
+        <h1 className="text-center bg-violet-950 text-blue-200 font-semibold text-3xl py-2">
+          Room Id : {roomId}
+        </h1>
+
+        <div className="flex flex-col mt-3 pb-1 overflow-auto ">
           {messages.length > 0 ? (
             messages.map((message, index) => (
               <div key={index} className="mb-1 flex m-1 ml-4 mr-4 text-sm">
-                <div className={`w-auto bg-blue-400 h-auto rounded-lg pl-2 ${(message.username === loggedUser) ? "ml-auto" : ""} `}> 
-                    <p className={`${(message.username === loggedUser) ? 'hidden' : ''}`}>{message.username}</p>
-                    <div className="flex mb-1"> <p>{message.message}</p>
-                    <p className="ml-4 text-xs pr-2 pt-1 text-gray-600">{message.timestamp}</p> </div>
+                <div
+                  className={`w-auto bg-blue-400 h-auto rounded-lg pl-2 ${
+                    message.username === loggedUser ? "ml-auto" : ""
+                  } `}
+                >
+                  <p
+                    className={`${
+                      message.username === loggedUser ? "hidden" : ""
+                    }`}
+                  >
+                    {message.username}
+                  </p>
+                  <div className="flex mb-1">
+                    {" "}
+                    <p>{message.message}</p>
+                    <p className="ml-4 text-xs pr-2 pt-1 text-gray-600">
+                      {message.timestamp}
+                    </p>{" "}
+                  </div>
                 </div>
               </div>
             ))
@@ -94,8 +112,8 @@ const Chat = () => {
             <p>No messages available</p>
           )}
         </div>
-        <div className="mt-auto bg-violet-500 p-4 rounded-b-lg">
-          <div className="flex">
+        <div className="mt-auto bg-violet-500 p-3 rounded-b-lg">
+          <div className="flex h-10 ">
             <input
               className="flex-grow p-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-300"
               type="text"

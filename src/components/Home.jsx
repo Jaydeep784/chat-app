@@ -28,17 +28,16 @@ const Home = () => {
         id: roomId,
         users: [user],
       });
-      const loggedUser = JSON.parse(localStorage.getItem('user'));
-      const loggedRoomId = JSON.parse(localStorage.getItem('roomId'));
+      const loggedUser = JSON.parse(localStorage.getItem("user"));
+      const loggedRoomId = JSON.parse(localStorage.getItem("roomId"));
 
-      if(!loggedUser && !loggedRoomId) {
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('roomId', JSON.stringify(roomId));
+      if (!loggedUser && !loggedRoomId) {
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("roomId", JSON.stringify(roomId));
         console.log("User added to local storage");
       }
-
+      alert(`You have created room with id ${roomId} with username ${user}`);
       navigate("/chat");
-      
     } catch (error) {
       console.log(error);
     }
@@ -58,19 +57,21 @@ const Home = () => {
           users: arrayUnion(user),
         });
 
-        const loggedUser = JSON.parse(localStorage.getItem('user'));
-        const loggedRoomId = JSON.parse(localStorage.getItem('roomId'));
-        console.log(loggedRoomId);
+        const loggedUser = JSON.parse(localStorage.getItem("user"));
+        const loggedRoomId = JSON.parse(localStorage.getItem("roomId"));
 
-        if(!loggedUser && !loggedRoomId) {
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('roomId', JSON.stringify(roomId));
-        }
+        if (loggedUser && loggedRoomId) {
+          localStorage.removeItem("user");
+          localStorage.removeItem("roomId");
+        } 
+        localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("roomId", JSON.stringify(roomId));
+
         console.log("User added to local storage");
         console.log("User added to the room!");
-        
+
+        alert(`You have joined room with id ${roomId} with username ${user}`);
         navigate("/chat");
-        
       } else {
         // If the document does not exist, log a message
         console.log("No such room exists. Create One....");
@@ -86,49 +87,75 @@ const Home = () => {
 
   return (
     <>
-      <h1 className="text-center mt-6 text-4xl font-bold m-4">
+      <h1 className="text-center mt-6 text-2xl sm:text-3xl md:text-4xl font-bold m-4">
         Welcome to the chat application
       </h1>
-      <div className="flex justify-center">
-        <div className="mx-20 mt-5">
-          <p className="text-lg">Want to create a new room : </p>
+      {/* <div className="flex flex-col md:flex-row justify-center items-center space-y-5 md:space-y-0">
+        <div className="mx-10 md:mx-20 mt-5">
+          <p className="text-lg">Want to create a new room:</p>
           <button
             onClick={() => {
               setRoom("Create");
             }}
-            className="ml-14 p-3 border m-3 bg-violet-700 rounded-lg text-white hover:text-lg"
+            className="ml-4 md:ml-14 p-3 border m-3 bg-violet-700 rounded-lg text-white hover:bg-violet-800 transition-all duration-300"
           >
             Create Room
           </button>
         </div>
 
-        <div className="m-5 ">
-          <p className="text-lg">Already have a room id : </p>
+        <div className="mx-10 md:mx-20 mt-5">
+          <p className="text-lg">Already have a room id:</p>
           <button
             onClick={() => {
               setRoom("Join");
             }}
-            className="ml-12 p-3 border m-3 bg-violet-700 rounded-lg text-white hover:text-lg"
+            className="ml-4 md:ml-12 p-3 border m-3 bg-violet-700 rounded-lg text-white hover:bg-violet-800 transition-all duration-300"
+          >
+            Join Room
+          </button>
+        </div>
+      </div> */}
+      <div className="flex flex-col md:flex-row justify-center items-center gap-5 mt-10 ">
+        <div className="flex flex-col items-center">
+          <p className="text-lg font-medium text-gray-700">
+            Want to create a new room:
+          </p>
+          <button
+            onClick={() => {
+              setRoom("Create");
+            }}
+            className="mt-4 px-6 py-3 bg-violet-700 text-white rounded-lg hover:bg-violet-800 transition-all duration-300"
+          >
+            Create Room
+          </button>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <p className="text-lg font-medium text-gray-700">
+            Already have a room id:
+          </p>
+          <button
+            onClick={() => {
+              setRoom("Join");
+            }}
+            className="mt-4 px-6 py-3 bg-violet-700 text-white rounded-lg hover:bg-violet-800 transition-all duration-300"
           >
             Join Room
           </button>
         </div>
       </div>
-      <div className="mx-auto w-96 mt-40">
-        {(() => {
-          if (room !== null)
-            return (
-              <CreateRoom
-                room={room}
-                user={user}
-                setRoomId={setRoomId}
-                setUser={setUser}
-                findAndJoinRoom={findAndJoinRoom}
-                createRoom={createRoom}
-                roomId={roomId}
-              />
-            );
-        })()}
+      <div className="mx-auto w-full sm:w-80 md:w-96 mt-20 sm:mt-32 md:mt-40">
+        {room !== null && (
+          <CreateRoom
+            room={room}
+            user={user}
+            setRoomId={setRoomId}
+            setUser={setUser}
+            findAndJoinRoom={findAndJoinRoom}
+            createRoom={createRoom}
+            roomId={roomId}
+          />
+        )}
       </div>
     </>
   );
