@@ -23,16 +23,17 @@ const Home = () => {
 
   const createRoom = async () => {
     const docRef = doc(db, "room", roomId);
+    const lowerUser = user.toLowerCase();
     try {
       await setDoc(docRef, {
         id: roomId,
-        users: [user],
+        users: [lowerUser],
       });
       const loggedUser = JSON.parse(localStorage.getItem("user"));
       const loggedRoomId = JSON.parse(localStorage.getItem("roomId"));
 
       if (!loggedUser && !loggedRoomId) {
-        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("user", JSON.stringify(lowerUser));
         localStorage.setItem("roomId", JSON.stringify(roomId));
         console.log("User added to local storage");
       }
@@ -46,16 +47,22 @@ const Home = () => {
   const findAndJoinRoom = async (roomId, user) => {
     const docRef = doc(db, "room", roomId);
 
+    const lowerUser = user.toLowerCase();
+
     try {
-      // Get the document snapshot to check if the document exists
+  
       const docSnapshot = await getDoc(docRef);
-      console.log(docSnapshot.exists()); // Log whether the document exists
 
       if (docSnapshot.exists()) {
-        // If the document exists, update the 'users' array by adding the user
-        await updateDoc(docRef, {
-          users: arrayUnion(user),
-        });
+      
+        const truthValue = docSnapshot.data().users.includes(lowerUser);
+
+        if (truthValue === false) {
+
+          await updateDoc(docRef, {
+            users: arrayUnion(lowerUser),
+          });
+        }
 
         const loggedUser = JSON.parse(localStorage.getItem("user"));
         const loggedRoomId = JSON.parse(localStorage.getItem("roomId"));
@@ -63,27 +70,19 @@ const Home = () => {
         if (loggedUser && loggedRoomId) {
           localStorage.removeItem("user");
           localStorage.removeItem("roomId");
-        } 
-        localStorage.setItem("user", JSON.stringify(user));
-            localStorage.setItem("roomId", JSON.stringify(roomId));
-
-        console.log("User added to local storage");
-        console.log("User added to the room!");
+        }
+        localStorage.setItem("user", JSON.stringify(lowerUser));
+        localStorage.setItem("roomId", JSON.stringify(roomId));
 
         alert(`You have joined room with id ${roomId} with username ${user}`);
         navigate("/chat");
       } else {
-        // If the document does not exist, log a message
-        console.log("No such room exists. Create One....");
+        alert("No such room exists. Create One....");
       }
     } catch (error) {
       console.log(error);
     }
   };
-
-  //   async function findAndJoinRoom() {
-  //     console.log("inside find and join room ");
-  //   }
 
   return (
     <>

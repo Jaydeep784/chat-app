@@ -1,6 +1,8 @@
 import {
+  arrayRemove,
   arrayUnion,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   updateDoc,
@@ -11,6 +13,8 @@ import { db } from "../firebase-config";
 const Chat = () => {
   const [msg, setMsg] = useState("");
   const [messages, setMessages] = useState([]);
+  const [delIcon, setDelIcon] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const roomId = JSON.parse(localStorage.getItem("roomId"));
   const loggedUser = JSON.parse(localStorage.getItem("user"));
@@ -28,12 +32,12 @@ const Chat = () => {
       }
     };
     getData();
-  }, [messages]);
+  }, []);
 
   const handleSend = async (e) => {
     e.preventDefault();
 
-    if(msg === '') return alert("Can't send empty message..")
+    if (msg === "") return alert("Can't send empty message..");
 
     const roomRef = doc(db, "room", roomId);
     const msgRef = collection(roomRef, "messages");
@@ -74,6 +78,21 @@ const Chat = () => {
     setMsg("");
   };
 
+  const deleteMessage = async (index) => {
+    const msgToDelete = messages[index];
+    const roomRef = doc(db, "room", roomId);
+    try {
+      await updateDoc(roomRef, {
+        chat: arrayRemove(msgToDelete),
+      });
+
+      setMessages((prevMsg) => prevMsg.filter((_, i) => i !== index));
+      console.log("message deleted");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       {/* <h1 className='text-center'>Chat component with all chats</h1> */}
@@ -85,7 +104,12 @@ const Chat = () => {
         <div className="flex flex-col mt-3 pb-1 overflow-auto ">
           {messages.length > 0 ? (
             messages.map((message, index) => (
-              <div key={index} className="mb-1 flex m-1 ml-4 mr-4 text-sm">
+              <div
+                key={index}
+                className="mb-1 flex m-1 ml-4 mr-4 text-sm"
+                onMouseOver={() => {if(message.username === loggedUser) setHoveredIndex(index)}}
+                onMouseOut={() => setHoveredIndex(null)}
+              >
                 <div
                   className={`w-auto bg-blue-400 h-auto rounded-lg pl-2 ${
                     message.username === loggedUser ? "ml-auto" : ""
@@ -100,10 +124,13 @@ const Chat = () => {
                   </p>
                   <div className="flex mb-1">
                     {" "}
-                    <p>{message.message}</p>
+                    <p className="">{message.message}</p>
                     <p className="ml-4 text-xs pr-2 pt-1 text-gray-600">
                       {message.timestamp}
-                    </p>{" "}
+                    </p>
+                    {hoveredIndex === index && (
+                      <button onClick={() => deleteMessage(index)}>🗑️</button>
+                    )}
                   </div>
                 </div>
               </div>
